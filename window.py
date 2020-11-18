@@ -20,6 +20,7 @@ class MyGame(arcade.Window):
         self.player_sprite = None
         self.physics_engine = None
         self.wall_list = None
+        p1 = Player()
 
         arcade.set_background_color(arcade.csscolor.BLUE_VIOLET)
 
@@ -29,21 +30,38 @@ class MyGame(arcade.Window):
         self.wall_list = arcade.SpriteList(use_spatial_hash=True)
         
         # Set up the player, specifically placing it at these coordinates.
-        image_source = "Images\Player.png"
         wall_source = "Images\wall.png"
 
-        self.player_sprite = arcade.Sprite(image_source, CHARACTER_SCALING)
-        self.player_sprite.center_x = 64
-        self.player_sprite.center_y = 128
-        self.player_list.append(self.player_sprite)
+        p1.setup()
+        self.player_list.append(p1.player_sprite)
 
+        #Floor
         for x in range(0, 1250, 32):
             wall = arcade.Sprite("Images\wall.png", TILE_SCALING)
             wall.center_x = x
-            wall.center_y = 32
+            wall.center_y = 15
+            self.wall_list.append(wall)
+        
+        #Ceiling
+        for x in range(0, 1250, 32):
+            wall = arcade.Sprite("Images\wall.png", TILE_SCALING)
+            wall.center_x = x
+            wall.center_y = 635
             self.wall_list.append(wall)
 
-        self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, self.wall_list)
+        for y in range(0, 1250, 32):
+            wall = arcade.Sprite("Images\wall.png", TILE_SCALING)
+            wall.center_x = 15
+            wall.center_y = y
+            self.wall_list.append(wall)
+            
+        for y in range(0, 1250, 32):
+            wall = arcade.Sprite("Images\wall.png", TILE_SCALING)
+            wall.center_x = 985
+            wall.center_y = y
+            self.wall_list.append(wall)
+
+        self.physics_engine = arcade.PhysicsEngineSimple(p1.player_sprite, self.wall_list)
 
     def on_draw(self):
         """ Render the screen. """
@@ -63,25 +81,25 @@ class MyGame(arcade.Window):
         """Called whenever a key is pressed. """
 
         if key == arcade.key.UP or key == arcade.key.W:
-            self.player_sprite.change_y = PLAYER_MOVEMENT_SPEED
+            p1.player_sprite.change_y = PLAYER_MOVEMENT_SPEED
         elif key == arcade.key.DOWN or key == arcade.key.S:
-            self.player_sprite.change_y = -PLAYER_MOVEMENT_SPEED
+            p1.player_sprite.change_y = -PLAYER_MOVEMENT_SPEED
         elif key == arcade.key.LEFT or key == arcade.key.A:
-            self.player_sprite.change_x = -PLAYER_MOVEMENT_SPEED
+            p1.player_sprite.change_x = -PLAYER_MOVEMENT_SPEED
         elif key == arcade.key.RIGHT or key == arcade.key.D:
-            self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED
+            p1.player_sprite.change_x = PLAYER_MOVEMENT_SPEED
     
     def on_key_release(self, key, modifiers):
         """Called when the user releases a key. """
 
         if key == arcade.key.UP or key == arcade.key.W:
-            self.player_sprite.change_y = 0
+            p1.player_sprite.change_y = 0
         elif key == arcade.key.DOWN or key == arcade.key.S:
-            self.player_sprite.change_y = 0
+            p1.player_sprite.change_y = 0
         elif key == arcade.key.LEFT or key == arcade.key.A:
-            self.player_sprite.change_x = 0
+            p1.player_sprite.change_x = 0
         elif key == arcade.key.RIGHT or key == arcade.key.D:
-            self.player_sprite.change_x = 0
+            p1.player_sprite.change_x = 0
 
 def main():
     """ Main method """
@@ -89,6 +107,16 @@ def main():
     window.setup()
     arcade.run()
 
+class Player:
+    def __init__(self):
+        self.player_sprite = None
+    
+    def setup(self):
+        image_source = 'Images\Player.png'
+
+        self.player_sprite = arcade.Sprite(image_source, CHARACTER_SCALING)
+        self.player_sprite.center_x = 64
+        self.player_sprite.center_y = 128
 
 if __name__ == "__main__":
     main()

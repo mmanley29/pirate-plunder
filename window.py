@@ -29,18 +29,39 @@ class MyGame(arcade.Window):
         self.wall_list = arcade.SpriteList(use_spatial_hash=True)
         
         # Set up the player, specifically placing it at these coordinates.
-        image_source = "Images\Player.png"
-        wall_source = "Images\wall.png"
+        image_source = 'Images\Player.png'
 
-        self.player_sprite = arcade.Sprite(image_source, CHARACTER_SCALING)
+        self.player_sprite = Player(image_source, CHARACTER_SCALING)
         self.player_sprite.center_x = 64
         self.player_sprite.center_y = 128
         self.player_list.append(self.player_sprite)
+        
+        wall_source = "Images\wall.png"
 
+        #Floor
         for x in range(0, 1250, 32):
             wall = arcade.Sprite("Images\wall.png", TILE_SCALING)
             wall.center_x = x
-            wall.center_y = 32
+            wall.center_y = 15
+            self.wall_list.append(wall)
+        
+        #Ceiling
+        for x in range(0, 1250, 32):
+            wall = arcade.Sprite("Images\wall.png", TILE_SCALING)
+            wall.center_x = x
+            wall.center_y = 635
+            self.wall_list.append(wall)
+
+        for y in range(0, 1250, 32):
+            wall = arcade.Sprite("Images\wall.png", TILE_SCALING)
+            wall.center_x = 15
+            wall.center_y = y
+            self.wall_list.append(wall)
+            
+        for y in range(0, 1250, 32):
+            wall = arcade.Sprite("Images\wall.png", TILE_SCALING)
+            wall.center_x = 985
+            wall.center_y = y
             self.wall_list.append(wall)
 
         self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, self.wall_list)
@@ -89,6 +110,10 @@ def main():
     window.setup()
     arcade.run()
 
+class Player(arcade.Sprite):
+    def __init__(self, filename, scale):
+        super().__init__(filename, scale)
+    
 
 if __name__ == "__main__":
     main()

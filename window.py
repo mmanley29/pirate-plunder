@@ -8,6 +8,7 @@ SCREEN_TITLE = "Pirate Plunder"
 CHARACTER_SCALING = .5
 PLAYER_MOVEMENT_SPEED = 10
 TILE_SCALING = 0.5
+BULLET_SPEED = 10
 MUSIC_LIST = ['Sounds\You Are a Pirate.mp3', 'Sounds\ALESTORM - Drink (8 bit Remix).mp3', 'Sounds\Alestorm-Captain Morgan Revenge (8-bit).mp3']
 
 class MyGame(arcade.View):
@@ -28,6 +29,7 @@ class MyGame(arcade.View):
         self.enemy_sprite = None
         self.bgm = music(MUSIC_LIST[1])
         self.invince_timer = 0
+        self.bullet_list = None
 
         arcade.set_background_color(arcade.csscolor.BLUE_VIOLET)
 
@@ -36,7 +38,7 @@ class MyGame(arcade.View):
         self.player_list = arcade.SpriteList()
         self.wall_list = arcade.SpriteList(use_spatial_hash=True)
         self.enemy_list = arcade.SpriteList()
-
+        self.bullet_list = arcade.SpriteList()
         self.score = 0
         
         # Set up the player, specifically placing it at these coordinates.
@@ -46,11 +48,6 @@ class MyGame(arcade.View):
         self.player_sprite.center_x = 64
         self.player_sprite.center_y = 128
         self.player_list.append(self.player_sprite)
-        
-        self.enemy_sprite = Enemy('Images\Enemy.png', CHARACTER_SCALING,1, 3)
-        self.enemy_sprite.center_x = 500
-        self.enemy_sprite.center_y = 300
-        self.enemy_list.append(self.enemy_sprite)
 
         #Floor
         for x in range(0, 1250, 32):
@@ -87,6 +84,7 @@ class MyGame(arcade.View):
         self.player_list.draw()
         self.wall_list.draw()
         self.enemy_list.draw()
+        self.bullet_list.draw()
         # Put the health on the screen.
         output = f"Health: {self.player_sprite.player_health}"
         arcade.draw_text(output, 10, 630, arcade.color.WHITE, 14)
@@ -95,6 +93,43 @@ class MyGame(arcade.View):
         output = f"Score: {self.score}"
         arcade.draw_text(output, 10, 10, arcade.color.WHITE, 14)
 
+    def on_mouse_press(self, x, y, button, modifiers):
+        """ Called whenever the mouse button is clicked. """
+
+        # Create a bullet
+        bullet = arcade.Sprite(r"Images\better_bullet.png", .2)
+
+        # Position the bullet at the player's current location
+        start_x = self.player_sprite.center_x
+        start_y = self.player_sprite.center_y
+        bullet.center_x = start_x
+        bullet.center_y = start_y
+
+        # Get from the mouse the destination location for the bullet
+        # IMPORTANT! If you have a scrolling screen, you will also need
+        # to add in self.view_bottom and self.view_left.
+        dest_x = x
+        dest_y = y
+
+        # Do math to calculate how to get the bullet to the destination.
+        # Calculation the angle in radians between the start points
+        # and end points. This is the angle the bullet will travel.
+        x_diff = dest_x - start_x
+        y_diff = dest_y - start_y
+        angle = math.atan2(y_diff, x_diff)
+
+        # Angle the bullet sprite so it doesn't look like it is flying
+        # sideways.
+        bullet.angle = math.degrees(angle)
+        print(f"Bullet angle: {bullet.angle:.2f}")
+
+        # Taking into account the angle, calculate our change_x
+        # and change_y. Velocity is how fast the bullet travels.
+        bullet.change_x = math.cos(angle) * BULLET_SPEED
+        bullet.change_y = math.sin(angle) * BULLET_SPEED
+
+        # Add the bullet to the appropriate lists
+        self.bullet_list.append(bullet)
 
     def on_update(self, delta_time):
         """ Movement and game logic """
@@ -104,7 +139,9 @@ class MyGame(arcade.View):
         # Move the player with the physics engine
         if not self.game_over:
             self.physics_engine.update()
-            self.enemy_sprite.chase_player(self.player_sprite)
+            for enemy in self.enemy_list:
+                enemy.chase_player(self.player_sprite)
+            self.bullet_list.update()
 
         PlayerCollide = arcade.check_for_collision_with_list(self.player_sprite, self.enemy_list)
         
@@ -124,6 +161,40 @@ class MyGame(arcade.View):
             self.bgm.stop()
             end = gameOver()
             self.window.show_view(end)
+
+        for bullet in self.bullet_list:
+            hit_list = arcade.check_for_collision_with_list(bullet, self.enemy_list)
+            wall_hit_list = arcade.check_for_collision_with_list(bullet, self.wall_list)
+
+            # If it did, get rid of the bullet
+            if len(hit_list) > 0:
+                bullet.remove_from_sprite_lists()
+            
+            for enemy in hit_list:
+                enemy.remove_from_sprite_lists()
+                self.score += 1
+
+            if len(wall_hit_list) > 0:
+                bullet.remove_from_sprite_lists()
+
+        if len(self.enemy_list) == 0:
+            for i in range(3):
+                success_spawn = False
+                enemy_sprite = Enemy('Images\Enemy.png', CHARACTER_SCALING,1, 3)
+                while not success_spawn:
+                    enemy_sprite.center_x = random.randrange(SCREEN_WIDTH)
+                    enemy_sprite.center_y = random.randrange(SCREEN_HEIGHT)
+
+                    # See if the coin is hitting a wall
+                    wall_hit_list = arcade.check_for_collision_with_list(enemy_sprite, self.wall_list)
+
+                    player_hit_list = arcade.check_for_collision_with_list(enemy_sprite, self.player_list)
+
+                    if len(wall_hit_list) == 0 and len(player_hit_list) == 0:
+                        # It is!
+                        success_spawn = True
+
+                self.enemy_list.append(enemy_sprite)
 
     def on_key_press(self, key, modifiers):
         """Cend = gameOver()

@@ -9,7 +9,7 @@ CHARACTER_SCALING = .5
 PLAYER_MOVEMENT_SPEED = 10
 TILE_SCALING = 0.5
 BULLET_SPEED = 10
-MUSIC_LIST = ['Sounds\You Are a Pirate.mp3', 'Sounds\ALESTORM - Drink (8 bit Remix).mp3', 'Sounds\Alestorm-Captain Morgan Revenge (8-bit).mp3']
+MUSIC_LIST = [r'Sounds\You Are a Pirate.mp3', r'Sounds\ALESTORM - Drink (8 bit Remix).mp3', r'Sounds\Alestorm-Captain Morgan Revenge (8-bit).mp3']
 
 class MyGame(arcade.View):
     """
@@ -30,6 +30,10 @@ class MyGame(arcade.View):
         self.bgm = music(MUSIC_LIST[1])
         self.invince_timer = 0
         self.bullet_list = None
+        self.num_enemies = 3
+        self.Wave = 0
+        self.wave_transition = True
+        self.tranistion_counter = 0
 
         arcade.set_background_color(arcade.csscolor.BLUE_VIOLET)
 
@@ -92,6 +96,10 @@ class MyGame(arcade.View):
         # Put the score on the screen.
         output = f"Score: {self.score}"
         arcade.draw_text(output, 10, 10, arcade.color.WHITE, 14)
+        if self.wave_transition:
+            waveMsg = f"Wave {self.Wave}"
+            arcade.draw_text(waveMsg, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, arcade.color.BLACK, 
+                        font_size=75, anchor_x="center")
 
     def on_mouse_press(self, x, y, button, modifiers):
         """ Called whenever the mouse button is clicked. """
@@ -178,23 +186,35 @@ class MyGame(arcade.View):
                 bullet.remove_from_sprite_lists()
 
         if len(self.enemy_list) == 0:
-            for i in range(3):
-                success_spawn = False
-                enemy_sprite = Enemy('Images\Enemy.png', CHARACTER_SCALING,1, 3)
-                while not success_spawn:
-                    enemy_sprite.center_x = random.randrange(SCREEN_WIDTH)
-                    enemy_sprite.center_y = random.randrange(SCREEN_HEIGHT)
+            self.wave_transition = True
 
-                    # See if the coin is hitting a wall
-                    wall_hit_list = arcade.check_for_collision_with_list(enemy_sprite, self.wall_list)
+        if self.wave_transition == True:
+            if self.tranistion_counter == 0:
+                self.Wave += 1
+            if self.tranistion_counter < 3:
+                self.tranistion_counter += delta_time
+            else: 
+                self.wave_transition = False
+                self.tranistion_counter = 0
+                if self.Wave % 3 == 0:
+                    self.num_enemies += 2
+                for i in range(self.num_enemies):
+                    success_spawn = False
+                    enemy_sprite = Enemy('Images\Enemy.png', CHARACTER_SCALING,1, 3)
+                    while not success_spawn:
+                        enemy_sprite.center_x = random.randrange(SCREEN_WIDTH)
+                        enemy_sprite.center_y = random.randrange(SCREEN_HEIGHT)
 
-                    player_hit_list = arcade.check_for_collision_with_list(enemy_sprite, self.player_list)
+                        # See if the coin is hitting a wall
+                        wall_hit_list = arcade.check_for_collision_with_list(enemy_sprite, self.wall_list)
 
-                    if len(wall_hit_list) == 0 and len(player_hit_list) == 0:
-                        # It is!
-                        success_spawn = True
+                        player_hit_list = arcade.check_for_collision_with_list(enemy_sprite, self.player_list)
 
-                self.enemy_list.append(enemy_sprite)
+                        if len(wall_hit_list) == 0 and len(player_hit_list) == 0:
+                            # It is!
+                            success_spawn = True
+
+                    self.enemy_list.append(enemy_sprite)
 
     def on_key_press(self, key, modifiers):
         """Cend = gameOver()

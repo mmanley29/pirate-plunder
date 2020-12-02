@@ -46,7 +46,7 @@ class MyGame(arcade.View):
         self.score = 0
         
         # Set up the player, specifically placing it at these coordinates.
-        image_source = 'Images\Player.png'
+        image_source = 'Images\pirate.png'
 
         self.player_sprite = Player(image_source, CHARACTER_SCALING)
         self.player_sprite.center_x = 64
@@ -284,13 +284,15 @@ class gameOver(arcade.View):
         arcade.start_render()
         arcade.draw_text("Game Over", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, arcade.color.BLACK, 
                         font_size=75, anchor_x="center")
-        arcade.draw_text("CLICK TO RESTART", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 50, arcade.color.BLACK, 
+        arcade.draw_xywh_rectangle_filled(SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT/2 - 50,200,50,arcade.color.BLACK)
+        arcade.draw_text("RESTART", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 50, arcade.color.WHITE, 
                         font_size=40, anchor_x="center")
     
     def on_mouse_press(self,_x,_y,_button,_modifiers):
-        self.bgm.stop()
-        menu = mainMenu()
-        self.window.show_view(menu)
+        if _x < SCREEN_WIDTH/2 + 100 and _x > SCREEN_WIDTH/2 - 100 and _y < SCREEN_HEIGHT/2 - 25 and _y > SCREEN_HEIGHT/2 - 75:
+            self.bgm.stop()
+            menu = mainMenu()
+            self.window.show_view(menu)
 
 class music(arcade.Sound):
     '''Plays the music'''

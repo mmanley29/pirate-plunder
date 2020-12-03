@@ -6,10 +6,25 @@ SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 650
 SCREEN_TITLE = "Pirate Plunder"
 CHARACTER_SCALING = .5
-PLAYER_MOVEMENT_SPEED = 10
 TILE_SCALING = 0.5
 BULLET_SPEED = 10
 MUSIC_LIST = [r'Sounds\You Are a Pirate.mp3', r'Sounds\ALESTORM - Drink (8 bit Remix).mp3', r'Sounds\Alestorm-Captain Morgan Revenge (8-bit).mp3']
+# How fast to move, and how fast to run the animation
+PLAYER_MOVEMENT_SPEED = 10
+UPDATES_PER_FRAME = 5
+
+# Constants used to track if the player is facing left or right
+RIGHT_FACING = 0
+LEFT_FACING = 1
+
+def load_texture_pair(filename):
+    """
+    Load a texture pair, with the second being a mirror image.
+    """
+    return [
+        arcade.load_texture(filename),
+        arcade.load_texture(filename, flipped_horizontally=True)
+    ]
 
 class MyGame(arcade.View):
     """
@@ -150,7 +165,7 @@ class MyGame(arcade.View):
             for enemy in self.enemy_list:
                 enemy.chase_player(self.player_sprite)
             self.bullet_list.update()
-
+        self.player_list.update_animation()
         PlayerCollide = arcade.check_for_collision_with_list(self.player_sprite, self.enemy_list)
         
         for collide in PlayerCollide:
@@ -289,7 +304,7 @@ class gameOver(arcade.View):
                         font_size=40, anchor_x="center")
     
     def on_mouse_press(self,_x,_y,_button,_modifiers):
-        if _x < SCREEN_WIDTH/2 + 100 and _x > SCREEN_WIDTH/2 - 100 and _y < SCREEN_HEIGHT/2 - 25 and _y > SCREEN_HEIGHT/2 - 75:
+        if _x < SCREEN_WIDTH/2 + 100 and _x > SCREEN_WIDTH/2 - 100 and _y < SCREEN_HEIGHT/2 and _y > SCREEN_HEIGHT/2 - 50:
             self.bgm.stop()
             menu = mainMenu()
             self.window.show_view(menu)
@@ -303,13 +318,28 @@ class music(arcade.Sound):
 class Player(arcade.Sprite):
     ''''''
     def __init__(self, filename, scale):
-        super().__init__(filename, scale)
+        super().__init__()
+        self.character_face_direction = RIGHT_FACING
+        self.cur_texture = 0
+        self.scale = CHARACTER_SCALING
+        self.points = [[-32, -32], [32, -32], [32, 32], [-32, 32]]
+        self.idle_texture_pair = load_texture_pair(f"Images\pirate.png")
         self.player_health = 3
         self.is_invincible = False
 
     def lose_health(self, damage_taken):
         self.damage_taken = damage_taken
         self.player_health -= self.damage_taken
+    
+    def update_animation(self, delta_time: float = 1/60):
+
+        # Figure out if we need to flip face left or right
+        if self.change_x < 0 and self.character_face_direction == RIGHT_FACING:
+            self.character_face_direction = LEFT_FACING
+        elif self.change_x > 0 and self.character_face_direction == LEFT_FACING:
+            self.character_face_direction = RIGHT_FACING
+        
+        self.texture = self.idle_texture_pair[self.character_face_direction]
 
 class Enemy(arcade.Sprite):
     def __init__(self, filename, scale, enemy_damage, mv_speed):

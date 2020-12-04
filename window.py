@@ -64,7 +64,7 @@ class MyGame(arcade.View):
         self.decor_list = arcade.SpriteList()
         self.ground_list = arcade.SpriteList()
         self.score = 0
-        self.gunshot_sound = music("Sounds\gun_1911.mp3")
+        '''self.gunshot_sound = music("Sounds\gun_1911.mp3")'''
         
         # Set up the player, specifically placing it at these coordinates.
         image_source = 'Images\pirate.png'
@@ -191,7 +191,7 @@ class MyGame(arcade.View):
 
         # Add the bullet to the appropriate lists
         self.bullet_list.append(bullet)
-        self.gunshot_sound.play(.3)
+        '''self.gunshot_sound.play(.3)'''
 
     def on_update(self, delta_time):
         """ Movement and game logic """
@@ -258,7 +258,7 @@ class MyGame(arcade.View):
                     self.num_enemies += 2
                 for i in range(self.num_enemies):
                     success_spawn = False
-                    enemy_sprite = Enemy('Images\purple.png', CHARACTER_SCALING,1, 3)
+                    enemy_sprite = Enemy('Images\enemy.png', CHARACTER_SCALING,1, 3)
                     while not success_spawn:
                         enemy_sprite.center_x = random.randrange(SCREEN_WIDTH)
                         enemy_sprite.center_y = random.randrange(SCREEN_HEIGHT)
@@ -389,14 +389,14 @@ class Player(arcade.Sprite):
 class Enemy(arcade.Sprite):
     def __init__(self, filename, scale, enemy_damage, mv_speed):
         super().__init__(filename, scale)
-        self.character_face_direction = RIGHT_FACING
+        '''self.character_face_direction = RIGHT_FACING
         self.cur_texture = 0
         self.scale = CHARACTER_SCALING
         self.points = [[-32, -32], [32, -32], [32, 32], [-32, 32]]
-        self.enemy_textures = []
+        self.enemy_textures = []'''
 
-        for i in range(4):
-            self.enemy_textures.append(arcade.load_texture("\Images\Walk.png",x = i * 150, y = 0, width= 150, height=150))
+        '''for i in range(4):
+            self.enemy_textures.append(arcade.load_texture("\Images\Walk.png",x = i * 150, y = 0, width= 150, height=150))'''
 
         self.enemy_damage = enemy_damage
         self.mv_speed = mv_speed
@@ -413,7 +413,7 @@ class Enemy(arcade.Sprite):
         elif self.center_x > player_sprite.center_x:
             self.center_x -= min(self.mv_speed, self.center_x - player_sprite.center_x)
     
-    def update_animation(self, delta_time: float = 1/60):
+    '''def update_animation(self, delta_time: float = 1/60):
         # Figure out if we need to flip face left or right
 
         if self.change_x < 0 and self.character_face_direction == RIGHT_FACING:
@@ -424,9 +424,9 @@ class Enemy(arcade.Sprite):
         self.cur_texture += 1
         if self.cur_texture > 4 * UPDATES_PER_FRAME:
             self.cur_texture = 0
-        '''frame = self.cur_texture // UPDATES_PER_FRAME
-        direction = self.character_face_direction'''
-        self.texture = self.enemy_textures[self.cur_texture]
+        frame = self.cur_texture // UPDATES_PER_FRAME
+        direction = self.character_face_direction
+        self.texture = self.enemy_textures[self.cur_texture]'''
 
 
 def main():

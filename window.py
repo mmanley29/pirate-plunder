@@ -54,7 +54,7 @@ class MyGame(arcade.View):
         self.tranistion_counter = 0
         self.gunshot_sound = None
 
-        arcade.set_background_color(arcade.csscolor.BLUE_VIOLET)
+        arcade.set_background_color(arcade.csscolor.SANDY_BROWN)
 
     def setup(self):
         """ Set up the game here. Call this function to restart the game. """
@@ -64,9 +64,12 @@ class MyGame(arcade.View):
         self.bullet_list = arcade.SpriteList()
         self.decor_list = arcade.SpriteList()
         self.ground_list = arcade.SpriteList()
+        self.tree_list = arcade.SpriteList()
         self.treetops_list = arcade.SpriteList()
         self.score = 0
-        '''self.gunshot_sound = music("Sounds\gun_1911.mp3")'''
+        self.gunshot_sound = arcade.sound.load_sound('Sounds\gun.mp3')
+        self.heart = arcade.load_texture('Images\heart.png')
+        self.crosshair = arcade.Sprite('Images\cursor.png', 1)
         
         # Set up the player, specifically placing it at these coordinates.
         image_source = 'Images\pirate.png'
@@ -76,26 +79,25 @@ class MyGame(arcade.View):
         self.player_sprite.center_y = 128
         self.player_list.append(self.player_sprite)
 
-         # --- Load in a map from the tiled editor ---
-
-        # Name of map file to load
+            # --- Load in a map from the tiled editor ---	
+        # Name of map file to load	
         map_name = "map\PirateMap.tmx"
 
-        # Read in the tiled map
-        my_map = arcade.tilemap.read_tmx(map_name)
+        # Read in the tiled map	
+        my_map = arcade.tilemap.read_tmx(map_name)	
 
-        # -- Platforms
-        for x in arcade.tilemap.process_layer(map_object=my_map, layer_name='Water', scaling=1, use_spatial_hash=True, hit_box_algorithm='Simple'):
-            self.wall_list.append(x)
+        # -- Platforms	
 
-        for x in arcade.tilemap.process_layer(map_object=my_map, layer_name='TREES', scaling=1, use_spatial_hash=True, hit_box_algorithm='Simple'):
-            self.wall_list.append(x)
+        for x in arcade.tilemap.process_layer(map_object=my_map, layer_name='Water', scaling=1, use_spatial_hash=True, hit_box_algorithm='Simple'):	
+            self.wall_list.append(x)	
 
-        # -- decor
+        self.tree_list = arcade.tilemap.process_layer(my_map, 'TREES', 1)
+
+        # -- decor	
         self.decor_list = arcade.tilemap.process_layer(my_map, 'Decor', 1)
 
-        self.ground_list = arcade.tilemap.process_layer(my_map, 'Ground', 1)
-        
+        self.ground_list = arcade.tilemap.process_layer(my_map, 'Ground', 1)	
+        	
         self.treetops_list = arcade.tilemap.process_layer(my_map, 'Trees Tops', 1)
 
         self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, self.wall_list)
@@ -104,17 +106,20 @@ class MyGame(arcade.View):
         """ Render the screen. """
 
         arcade.start_render()
-        self.ground_list.draw()
+        self.ground_list.draw()	
         self.wall_list.draw()
-        self.decor_list.draw()
-        self.enemy_list.draw()
-        self.player_list.draw()
-        self.treetops_list.draw()
+        self.tree_list.draw()	
+        self.decor_list.draw()	
+        self.enemy_list.draw()	
+        self.player_list.draw()	
+        self.treetops_list.draw()	
         self.bullet_list.draw()
+        self.crosshair.draw()
 
         # Put the health on the screen.
-        output = f"Health: {self.player_sprite.player_health}"
-        arcade.draw_text(output, 10, 630, arcade.color.WHITE, 14)
+        for i in range(self.player_sprite.player_health):
+            arcade.draw_scaled_texture_rectangle(30 + 35 * i, 615, self.heart, 1.5)
+        
 
         # Put the score on the screen.
         output = f"Score: {self.score}"
@@ -123,6 +128,10 @@ class MyGame(arcade.View):
             waveMsg = f"Wave {self.Wave}"
             arcade.draw_text(waveMsg, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, arcade.color.BLACK, 
                         font_size=75, anchor_x="center")
+
+    def on_mouse_motion(self,_x,_y,dx,dy):
+        self.crosshair.center_x = _x
+        self.crosshair.center_y = _y
 
     def on_mouse_press(self, x, y, button, modifiers):
         """ Called whenever the mouse button is clicked. """
@@ -161,7 +170,7 @@ class MyGame(arcade.View):
 
         # Add the bullet to the appropriate lists
         self.bullet_list.append(bullet)
-        '''self.gunshot_sound.play(.3)'''
+        self.gunshot_sound.play(.3)
 
     def on_update(self, delta_time):
         """ Movement and game logic """
@@ -177,8 +186,7 @@ class MyGame(arcade.View):
 
         self.player_list.update_animation()
 
-        for enemy in self.enemy_list:
-            enemy.update_animation()
+        self.enemy_list.update_animation()
         PlayerCollide = arcade.check_for_collision_with_list(self.player_sprite, self.enemy_list)
         
         for collide in PlayerCollide:
@@ -197,6 +205,7 @@ class MyGame(arcade.View):
             self.bgm.stop()
             end = gameOver()
             self.window.show_view(end)
+            end.get_score(self.score)
 
         for bullet in self.bullet_list:
             hit_list = arcade.check_for_collision_with_list(bullet, self.enemy_list)
@@ -228,7 +237,7 @@ class MyGame(arcade.View):
                     self.num_enemies += 2
                 for i in range(self.num_enemies):
                     success_spawn = False
-                    enemy_sprite = Enemy('Images\enemy.png', CHARACTER_SCALING,1, 3)
+                    enemy_sprite = Enemy(1, 3)
                     while not success_spawn:
                         enemy_sprite.center_x = random.randrange(SCREEN_WIDTH)
                         enemy_sprite.center_y = random.randrange(SCREEN_HEIGHT)
@@ -277,7 +286,7 @@ class splashScreen(arcade.View):
 
     def on_draw(self):
         arcade.start_render()
-        arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 50, self.background, 2)
+        arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 100, self.background, 1)
 
     def on_update(self, dt):
         self.counter += dt
@@ -290,6 +299,7 @@ class mainMenu(arcade.View):
         arcade.set_background_color(arcade.color.ANTIQUE_RUBY)
         self.bgm = music(MUSIC_LIST[0])
         self.background = arcade.load_texture('Images\pirate.png')
+        self.crosshair = arcade.Sprite('Images\cursor.png', 1)
         
     def on_draw(self):
         arcade.start_render()
@@ -298,6 +308,11 @@ class mainMenu(arcade.View):
         arcade.draw_text("CLICK TO START", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 -50, arcade.color.BLACK, 
                         font_size=40, anchor_x="center")
         arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 200, self.background, 2)
+        self.crosshair.draw()
+    
+    def on_mouse_motion(self,_x,_y,dx,dy):
+        self.crosshair.center_x = _x
+        self.crosshair.center_y = _y
     
     def on_mouse_press(self,_x,_y,_button,_modifiers):
         self.bgm.stop()
@@ -309,7 +324,12 @@ class gameOver(arcade.View):
     def on_show(self):
         arcade.set_background_color(arcade.color.ANTIQUE_RUBY)
         self.bgm = music(MUSIC_LIST[2])
-        
+        self.crosshair = arcade.Sprite('Images\cursor.png', 1)
+        self.score = 0
+
+    def get_score(self,points):
+        self.score = points
+
     def on_draw(self):
         arcade.start_render()
         arcade.draw_text("Game Over", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, arcade.color.BLACK, 
@@ -317,7 +337,15 @@ class gameOver(arcade.View):
         arcade.draw_xywh_rectangle_filled(SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT/2 - 50,200,50,arcade.color.BLACK)
         arcade.draw_text("RESTART", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 50, arcade.color.WHITE, 
                         font_size=40, anchor_x="center")
+        output = f"SCORE: {self.score}"
+        arcade.draw_text(output, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 200, arcade.color.WHITE, 
+                        font_size=40, anchor_x="center")
+        self.crosshair.draw()
     
+    def on_mouse_motion(self,_x,_y,dx,dy):
+        self.crosshair.center_x = _x
+        self.crosshair.center_y = _y
+
     def on_mouse_press(self,_x,_y,_button,_modifiers):
         if _x < SCREEN_WIDTH/2 + 100 and _x > SCREEN_WIDTH/2 - 100 and _y < SCREEN_HEIGHT/2 and _y > SCREEN_HEIGHT/2 - 50:
             self.bgm.stop()
@@ -328,7 +356,7 @@ class music(arcade.Sound):
     '''Plays the music'''
     def __init__(self, filename):
         super().__init__(filename)
-        self.play(.3)
+        self.play(.1)
 
 class Player(arcade.Sprite):
     ''''''
@@ -354,22 +382,30 @@ class Player(arcade.Sprite):
         elif self.change_x > 0 and self.character_face_direction == LEFT_FACING:
             self.character_face_direction = RIGHT_FACING
         
+        if self.is_invincible:
+            self.alpha = 255/2
+        else:
+            self.alpha = 255
         self.texture = self.idle_texture_pair[self.character_face_direction]
 
 class Enemy(arcade.Sprite):
-    def __init__(self, filename, scale, enemy_damage, mv_speed):
-        super().__init__(filename, scale)
-        '''self.character_face_direction = RIGHT_FACING
+    def __init__(self, enemy_damage, mv_speed):
+        super().__init__()
+        self.character_face_direction = RIGHT_FACING
         self.cur_texture = 0
-        self.scale = CHARACTER_SCALING
+        self.scale = 1
         self.points = [[-32, -32], [32, -32], [32, 32], [-32, 32]]
-        self.enemy_textures = []'''
+        self.enemy_textures = []
+        self.frame = 0
 
-        '''for i in range(4):
-            self.enemy_textures.append(arcade.load_texture("\Images\Walk.png",x = i * 150, y = 0, width= 150, height=150))'''
+        for i in range(4):
+            self.enemy_textures.append(arcade.load_texture("Images\Walk.png",x = i * 150, y = 0, width= 150, height=150))
+        for i in range(4):
+            self.enemy_textures.append(arcade.load_texture("Images\Walk.png",x = i * 150, y = 0, width= 150, height=150, flipped_horizontally=True))
 
         self.enemy_damage = enemy_damage
         self.mv_speed = mv_speed
+        self.texture = self.enemy_textures[self.character_face_direction]
 
     def chase_player(self, player_sprite):
         """ Allows the enemy to chase the player. """
@@ -380,28 +416,29 @@ class Enemy(arcade.Sprite):
 
         if self.center_x < player_sprite.center_x:
             self.center_x += min(self.mv_speed, player_sprite.center_x - self.center_x)
+            self.character_face_direction = RIGHT_FACING
         elif self.center_x > player_sprite.center_x:
             self.center_x -= min(self.mv_speed, self.center_x - player_sprite.center_x)
-    
-    '''def update_animation(self, delta_time: float = 1/60):
-        # Figure out if we need to flip face left or right
-
-        if self.change_x < 0 and self.character_face_direction == RIGHT_FACING:
             self.character_face_direction = LEFT_FACING
-        elif self.change_x > 0 and self.character_face_direction == LEFT_FACING:
-            self.character_face_direction = RIGHT_FACING
+    
+    def update_animation(self, delta_time: float = 1/60):
+        # Figure out if we need to flip face left or right
+        if self.character_face_direction == LEFT_FACING:
+            self.texture = self.enemy_textures[self.frame + 4]
+        elif self.character_face_direction == RIGHT_FACING:
+            self.texture = self.enemy_textures[self.frame]
         
         self.cur_texture += 1
-        if self.cur_texture > 4 * UPDATES_PER_FRAME:
+        if self.cur_texture > 3 * UPDATES_PER_FRAME:
             self.cur_texture = 0
-        frame = self.cur_texture // UPDATES_PER_FRAME
-        direction = self.character_face_direction
-        self.texture = self.enemy_textures[self.cur_texture]'''
+        self.frame = self.cur_texture // UPDATES_PER_FRAME
+        
 
 
 def main():
     """ Main method """
     window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+    window.set_mouse_visible(False)
     menu = splashScreen()
     window.show_view(menu)
     arcade.run()

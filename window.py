@@ -281,7 +281,7 @@ class mainMenu(arcade.View):
     def on_show(self):
         arcade.set_background_color(arcade.color.ANTIQUE_RUBY)
         self.bgm = music(MUSIC_LIST[0])
-        self.background = arcade.load_texture('Images\pirate.png')
+        self.background = arcade.load_texture('Images\chest.png')
         self.crosshair = arcade.Sprite('Images\cursor.png', 1)
         
     def on_draw(self):
@@ -290,7 +290,7 @@ class mainMenu(arcade.View):
                         font_size=75, anchor_x="center")
         arcade.draw_text("CLICK TO START", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 -50, arcade.color.BLACK, 
                         font_size=40, anchor_x="center")
-        arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 200, self.background, 2)
+        arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 200, self.background, .1)
         self.crosshair.draw()
     
     def on_mouse_motion(self,_x,_y,dx,dy):

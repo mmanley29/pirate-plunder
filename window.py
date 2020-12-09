@@ -17,15 +17,6 @@ UPDATES_PER_FRAME = 5
 RIGHT_FACING = 0
 LEFT_FACING = 1
 
-def load_texture_pair(filename):
-    """
-    Load a texture pair, with the second being a mirror image.
-    """
-    return [
-        arcade.load_texture(filename),
-        arcade.load_texture(filename, flipped_horizontally=True)
-    ]
-
 class MyGame(arcade.View):
     """
     Main application class.
@@ -67,52 +58,44 @@ class MyGame(arcade.View):
         self.tree_list = arcade.SpriteList()
         self.treetops_list = arcade.SpriteList()
         self.score = 0
-        self.gunshot_sound = arcade.sound.load_sound('Sounds\gun.mp3')
+        self.gunshot_sound = arcade.sound.load_sound("Sounds\gunshot_1911.mp3")
         self.heart = arcade.load_texture('Images\heart.png')
         self.crosshair = arcade.Sprite('Images\cursor.png', 1)
         
         # Set up the player, specifically placing it at these coordinates.
-        image_source = 'Images\pirate.png'
 
-        self.player_sprite = Player(image_source, CHARACTER_SCALING)
+        self.player_sprite = Player(CHARACTER_SCALING)
         self.player_sprite.center_x = 64
         self.player_sprite.center_y = 128
         self.player_list.append(self.player_sprite)
 
-            # --- Load in a map from the tiled editor ---	
-        # Name of map file to load	
+        # --- Load in a map from the tiled editor ---        		
+        # Name of map file to load        	
         map_name = "map\PirateMap.tmx"
-
-        # Read in the tiled map	
-        my_map = arcade.tilemap.read_tmx(map_name)	
-
-        # -- Platforms	
-
-        for x in arcade.tilemap.process_layer(map_object=my_map, layer_name='Water', scaling=1, use_spatial_hash=True, hit_box_algorithm='Simple'):	
-            self.wall_list.append(x)	
+        # Read in the tiled map        	
+        my_map = arcade.tilemap.read_tmx(map_name) 
+        # -- Platforms
+        for x in arcade.tilemap.process_layer(map_object=my_map, layer_name='Water', scaling=1, use_spatial_hash=True, hit_box_algorithm='Simple'):
+            self.wall_list.append(x) 
 
         self.tree_list = arcade.tilemap.process_layer(my_map, 'TREES', 1)
-
-        # -- decor	
         self.decor_list = arcade.tilemap.process_layer(my_map, 'Decor', 1)
-
-        self.ground_list = arcade.tilemap.process_layer(my_map, 'Ground', 1)	
-        	
+        self.ground_list = arcade.tilemap.process_layer(my_map, 'Ground', 1)
         self.treetops_list = arcade.tilemap.process_layer(my_map, 'Trees Tops', 1)
-
         self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, self.wall_list)
 
     def on_draw(self):
         """ Render the screen. """
 
         arcade.start_render()
-        self.ground_list.draw()	
+        
+        self.ground_list.draw()
         self.wall_list.draw()
-        self.tree_list.draw()	
-        self.decor_list.draw()	
-        self.enemy_list.draw()	
-        self.player_list.draw()	
-        self.treetops_list.draw()	
+        self.tree_list.draw()
+        self.decor_list.draw()
+        self.player_list.draw()
+        self.treetops_list.draw()
+        self.enemy_list.draw()
         self.bullet_list.draw()
         self.crosshair.draw()
 
@@ -137,7 +120,7 @@ class MyGame(arcade.View):
         """ Called whenever the mouse button is clicked. """
 
         # Create a bullet
-        bullet = arcade.Sprite(r"Images\better_bullet.png", .2)
+        bullet = arcade.Sprite(r"Images\The_Perfect_Bullet.png", .2)
 
         # Position the bullet at the player's current location
         start_x = self.player_sprite.center_x
@@ -298,7 +281,7 @@ class mainMenu(arcade.View):
     def on_show(self):
         arcade.set_background_color(arcade.color.ANTIQUE_RUBY)
         self.bgm = music(MUSIC_LIST[0])
-        self.background = arcade.load_texture('Images\pirate.png')
+        self.background = arcade.load_texture('Images\chest.png')
         self.crosshair = arcade.Sprite('Images\cursor.png', 1)
         
     def on_draw(self):
@@ -307,7 +290,7 @@ class mainMenu(arcade.View):
                         font_size=75, anchor_x="center")
         arcade.draw_text("CLICK TO START", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 -50, arcade.color.BLACK, 
                         font_size=40, anchor_x="center")
-        arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 200, self.background, 2)
+        arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 200, self.background, .1)
         self.crosshair.draw()
     
     def on_mouse_motion(self,_x,_y,dx,dy):
@@ -360,15 +343,40 @@ class music(arcade.Sound):
 
 class Player(arcade.Sprite):
     ''''''
-    def __init__(self, filename, scale):
+    def __init__(self, scale):
         super().__init__()
         self.character_face_direction = RIGHT_FACING
         self.cur_texture = 0
-        self.scale = CHARACTER_SCALING
+        self.scale = .1
         self.points = [[-32, -32], [32, -32], [32, 32], [-32, 32]]
-        self.idle_texture_pair = load_texture_pair(f"Images\pirate.png")
+        self.player_textures = []
+        self.cur_texture = 0
+        self.frame = 0
+        self.player_textures.append(arcade.load_texture(r"Images\adventure_girl\png\Idle (1).png"))
+        self.player_textures.append(arcade.load_texture(r"Images\adventure_girl\png\Idle (1).png", flipped_horizontally=True))
         self.player_health = 3
         self.is_invincible = False
+
+        self.player_textures.append(arcade.load_texture(r"Images\\adventure_girl\png\Run (1).png"))
+        self.player_textures.append(arcade.load_texture(r"Images\\adventure_girl\png\Run (2).png"))
+        self.player_textures.append(arcade.load_texture(r"Images\\adventure_girl\png\Run (3).png"))
+        self.player_textures.append(arcade.load_texture(r"Images\\adventure_girl\png\Run (4).png"))
+        self.player_textures.append(arcade.load_texture(r"Images\\adventure_girl\png\Run (5).png"))
+        self.player_textures.append(arcade.load_texture(r"Images\\adventure_girl\png\Run (6).png"))
+        self.player_textures.append(arcade.load_texture(r"Images\\adventure_girl\png\Run (7).png"))
+        self.player_textures.append(arcade.load_texture(r"Images\\adventure_girl\png\Run (8).png"))
+
+        self.player_textures.append(arcade.load_texture(r"Images\\adventure_girl\png\Run (1).png",flipped_horizontally=True))
+        self.player_textures.append(arcade.load_texture(r"Images\\adventure_girl\png\Run (2).png",flipped_horizontally=True))
+        self.player_textures.append(arcade.load_texture(r"Images\\adventure_girl\png\Run (3).png",flipped_horizontally=True))
+        self.player_textures.append(arcade.load_texture(r"Images\\adventure_girl\png\Run (4).png",flipped_horizontally=True))
+        self.player_textures.append(arcade.load_texture(r"Images\\adventure_girl\png\Run (5).png",flipped_horizontally=True))
+        self.player_textures.append(arcade.load_texture(r"Images\\adventure_girl\png\Run (6).png",flipped_horizontally=True))
+        self.player_textures.append(arcade.load_texture(r"Images\\adventure_girl\png\Run (7).png",flipped_horizontally=True))
+        self.player_textures.append(arcade.load_texture(r"Images\\adventure_girl\png\Run (8).png",flipped_horizontally=True))
+
+
+            
 
     def lose_health(self, damage_taken):
         self.damage_taken = damage_taken
@@ -381,12 +389,26 @@ class Player(arcade.Sprite):
             self.character_face_direction = LEFT_FACING
         elif self.change_x > 0 and self.character_face_direction == LEFT_FACING:
             self.character_face_direction = RIGHT_FACING
+            self.texture = self.player_textures[self.frame + 2]
         
+        if self.character_face_direction == LEFT_FACING:
+            self.texture = self.player_textures[self.frame + 10]
+        else:
+            self.texture = self.player_textures[self.frame + 2]
+
+
         if self.is_invincible:
             self.alpha = 255/2
         else:
             self.alpha = 255
-        self.texture = self.idle_texture_pair[self.character_face_direction]
+        if self.change_x == 0 and self.change_y == 0:
+            self.cur_texture = 0
+            self.texture = self.player_textures[self.character_face_direction]
+        else:
+            self.cur_texture += 1
+            if self.cur_texture > 7 * UPDATES_PER_FRAME:
+                self.cur_texture = 0
+            self.frame = self.cur_texture // UPDATES_PER_FRAME
 
 class Enemy(arcade.Sprite):
     def __init__(self, enemy_damage, mv_speed):

@@ -34,6 +34,7 @@ class MyGame(arcade.View):
         self.ground_list = None
         self.game_over = False
         self.enemy_list = None
+        self.treetops_list = None
         self.enemy_sprite = None
         self.bgm = music(MUSIC_LIST[1])
         self.invince_timer = 0
@@ -54,6 +55,8 @@ class MyGame(arcade.View):
         self.bullet_list = arcade.SpriteList()
         self.decor_list = arcade.SpriteList()
         self.ground_list = arcade.SpriteList()
+        self.tree_list = arcade.SpriteList()
+        self.treetops_list = arcade.SpriteList()
         self.score = 0
         self.gunshot_sound = arcade.sound.load_sound("Sounds\gunshot_1911.mp3")
         self.heart = arcade.load_texture('Images\heart.png')
@@ -66,42 +69,32 @@ class MyGame(arcade.View):
         self.player_sprite.center_y = 128
         self.player_list.append(self.player_sprite)
 
-        #Floor
-        for x in range(0, 1250, 32): 
-            wall = arcade.Sprite("Images\wall.png", TILE_SCALING)
-            wall.center_x = x
-            wall.center_y = 15
-            self.wall_list.append(wall)
-        
-        #Ceiling
-        for x in range(0, 1250, 32):
-            wall = arcade.Sprite("Images\wall.png", TILE_SCALING)
-            wall.center_x = x
-            wall.center_y = 635
-            self.wall_list.append(wall)
+        # --- Load in a map from the tiled editor ---        		
+        # Name of map file to load        	
+        map_name = "map\PirateMap.tmx"
+        # Read in the tiled map        	
+        my_map = arcade.tilemap.read_tmx(map_name) 
+        # -- Platforms
+        for x in arcade.tilemap.process_layer(map_object=my_map, layer_name='Water', scaling=1, use_spatial_hash=True, hit_box_algorithm='Simple'):
+            self.wall_list.append(x) 
 
-        for y in range(0, 1250, 32):
-            wall = arcade.Sprite("Images\wall.png", TILE_SCALING)
-            wall.center_x = 15
-            wall.center_y = y
-            self.wall_list.append(wall)
-            
-        for y in range(0, 1250, 32):
-            wall = arcade.Sprite("Images\wall.png", TILE_SCALING)
-            wall.center_x = 985
-            wall.center_y = y
-            self.wall_list.append(wall)
-
+        self.tree_list = arcade.tilemap.process_layer(my_map, 'TREES', 1)
+        self.decor_list = arcade.tilemap.process_layer(my_map, 'Decor', 1)
+        self.ground_list = arcade.tilemap.process_layer(my_map, 'Ground', 1)
+        self.treetops_list = arcade.tilemap.process_layer(my_map, 'Trees Tops', 1)
         self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, self.wall_list)
 
     def on_draw(self):
         """ Render the screen. """
 
         arcade.start_render()
-        self.player_list.draw()
+        
         self.ground_list.draw()
         self.wall_list.draw()
+        self.tree_list.draw()
         self.decor_list.draw()
+        self.player_list.draw()
+        self.treetops_list.draw()
         self.enemy_list.draw()
         self.bullet_list.draw()
         self.crosshair.draw()
